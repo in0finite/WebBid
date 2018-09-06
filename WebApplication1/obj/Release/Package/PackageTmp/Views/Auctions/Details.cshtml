@@ -1,0 +1,190 @@
+﻿@model WebApplication1.Auction
+
+@{
+    ViewBag.Title = "Details";
+}
+
+<h2>Details</h2>
+
+
+<div class="card-columns">
+
+    <div class="card bg-secondary">
+        <div class="card-body">
+
+
+            <hr />
+
+
+                <h3 class="card-text">@Model.Name</h3>
+
+
+                <p class="card-img"><img src="/ImageHandler.ashx?id=@Html.DisplayFor(model => model.GUID)" alt="ImageNotAvailable" /></p>
+
+             
+                <p class="card-text" id="timer @Model.GUID">
+                    @if (!Model.IsOpened())
+                    {
+                        @Model.StatusText
+                    }
+                </p>
+
+                <p class="card-text" id="price @Model.GUID">Price: @Model.CurrentPrice.TransformToCurrency() @WebApplication1.Settings.GlobalSettings.C</p>
+
+
+                @if (Model.StatusText == "OPENED")
+                {
+                    
+                    var lastBidder = WebApplication1.Controllers.AuctionsController.GetLastBidder(Model);
+                    if(lastBidder != null)
+                    {
+                        <p class="card-text" id="user @Model.GUID">@(lastBidder.Name + " " + lastBidder.Surname)</p>
+                    }
+                    
+                }
+
+
+                @using (Html.BeginForm("Bid", "Auctions", FormMethod.Post, new { id = "form_" + Model.GUID }))
+                {
+                    @Html.AntiForgeryToken()
+
+                    <input type="hidden" name="GUID" value="@Model.GUID" />
+
+                    <input type="hidden" name="OnDetailsPage" value="1" />
+
+                    <div class="form-group">
+
+                        <input type="number" name="tokensOffered" value="@((Model.CurrentPrice + 1).TransformToCurrency())" min="@((Model.CurrentPrice + 1).TransformToCurrency())" id="offerInput @Model.GUID" class="form-control" step="@Utils.TokenValue" />
+                        <br />
+
+                    </div>
+
+                    <div class="form-actions no-color">
+
+                        @if (Model.StatusText == "OPENED" && Auth.Check())
+                        {
+                            <button class="btn btn-primary" type="submit" id="bidButton @Model.GUID" onclick="">Bid Now</button>
+                        }
+                        else
+                        {
+                            <button class="btn btn-primary" type="submit" id="bidButton @Model.GUID" disabled>Bid Now</button>
+                        }
+
+                    </div>
+                }
+
+
+                @if (Model.StatusText == "READY" && Auth.Check() && Auth.User.IsAdmin())
+                {
+                    // add option to open ready auctions
+
+                    using (Html.BeginForm("Open", "Auctions", FormMethod.Post))
+                    {
+                        @Html.AntiForgeryToken()
+
+                        <input type="hidden" name="GUID" value="@Model.GUID" />
+
+                        <div class="form-actions no-color">
+
+                            &nbsp;
+                            <button class="btn btn-primary" type="submit" id="openButton @Model.GUID" onclick="">Open</button>
+
+                        </div>
+                    }
+
+                }
+
+
+        <p>
+            <br />
+            @Html.ActionLink("Back to List", "Index")
+        </p>
+
+    </div>
+</div>
+</div>
+
+
+<table class="table" id="bidsTable_@Model.GUID">
+    <tr>
+        <th>
+            User
+        </th>
+        <th>
+            Tokens Offered
+        </th>
+        <th>
+            Time
+        </th>
+        <th></th>
+    </tr>
+
+    <h4>Bids:</h4>
+    @foreach (var bid in Model.GetBids().OrderByDescending(b => b.DateOfBidding))
+    {
+        <tr>
+            <td>
+                @Html.DisplayFor(modelItem => bid.UserName)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => bid.TokensOffered)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => bid.DateOfBidding)
+            </td>
+        </tr>
+    }
+
+</table>
+
+
+
+@section scripts {
+
+    <script src="~/Scripts/jquery.signalR-2.3.0.min.js"></script>
+    <script src='/signalr/js'></script>
+    <script src="~/Scripts/auction.js"></script>
+
+    <script>
+
+        @if (Model.DateOpened.HasValue && Model.IsOpened())
+        {
+            <text>
+
+            var countDownDate = new Date( @Model.DateOpened.Value.AddSeconds(Model.Duration.Value).ToJsMilliseconds() );
+        
+            setIntervalForAuction("@Model.GUID", countDownDate);
+
+            </text>
+        }
+
+
+            $.connection.auctionHub.client.updateAuction = function (updateData) {
+
+                updateAuction(updateData);
+
+                // add new bid to table
+
+                var table = document.getElementById("bidsTable_" + updateData.auctionID);
+                if (null == table)
+                    return;
+
+                var row = table.insertRow(1);
+
+                // Insert new cells (<td> elements) at the 1st and 2nd position of the "new" <tr> element:
+                var cell1 = row.insertCell(0);
+                var cell2 = row.insertCell(1);
+                var cell3 = row.insertCell(2);
+
+                // Add some text to the new cells:
+                cell1.innerHTML = updateData.userPosted;
+                cell2.innerHTML = updateData.newBidAmount;
+                cell3.innerHTML = new Date().toLocaleDateString();
+
+            };
+
+
+    </script>
+
+}
+

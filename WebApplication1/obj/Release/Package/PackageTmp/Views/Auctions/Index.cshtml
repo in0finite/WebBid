@@ -1,0 +1,269 @@
+﻿@model List<WebApplication1.Auction>
+
+@{
+    ViewBag.Title = "Index";
+}
+
+<h2>Auctions</h2>
+
+@if (Auth.Check())
+{
+    <p>
+        <a href="/Auctions/Create"> <button class="btn btn-primary">Create new</button> </a>
+    </p>
+}
+
+
+<br />
+<br />
+
+
+<div class="row">
+@using (Html.BeginForm("Index", "Auctions", FormMethod.Get))
+{
+    //@Html.AntiForgeryToken()
+
+    <div class="col-md-2">
+        Name:
+        <input type="text" name="productName" class="form-control" />
+    </div>
+
+    <div class="col-md-2">
+        State:
+        <select name="status" class="form-control">
+            <option value="-1" selected>ALL</option>
+            <option value="0">READY</option>
+            <option value="1">OPENED</option>
+            <option value="2">CLOSED</option>
+        </select>
+    </div>
+
+    <div class="col-md-1">
+        Min price:
+        <input type="number" name="minPrice" min="1" class="form-control" />
+    </div>
+
+    <div class="col-md-1">
+        Max price:
+        <input type="number" name="maxPrice" class="form-control" />
+    </div>
+
+    if (Auth.Check())
+    {
+        <text>
+            <div class="col-md-2">
+                Show only won auctions:
+                <input type="checkbox" name="showOnlyWonAuctions" class="form-control" />
+            </div>
+        </text>
+    }
+
+    <div class="col-md-2">
+        Count:
+        <input type="number" name="count" value="@WebApplication1.Settings.GlobalSettings.N" class="form-control" />
+    </div>
+
+    <div class="form-actions no-color col-md-2">
+        <br />
+        <button class="btn btn-primary" type="submit" onclick="">Search</button>
+    </div>
+}
+</div>
+
+
+<br />
+<br />
+
+
+<p>
+    @for (int i = 0; i < ViewBag.numPages; i++)
+    {
+        if (ViewBag.pageNumber == i)
+        {
+            <b>
+                @Html.ActionLink((i + 1).ToString(), "Index", new { pageNumber = i })
+            </b>
+        }
+        else
+        {
+            @Html.ActionLink((i + 1).ToString(), "Index", new { pageNumber = i })
+        }
+
+        <text>
+        &nbsp;
+        </text>
+    }
+</p>
+
+
+<br />
+
+<hr />
+
+
+
+        
+
+
+
+        
+
+
+@*<div class="card-deck">*@
+
+    
+@{
+    int numRows = (int)Math.Ceiling(Model.Count / 3.0);
+    int auctionIndex = 0;
+
+    for (int rowIndex = 0; rowIndex < numRows; rowIndex++)
+    {
+        
+        // display 3 auctions in a row
+
+        <div class="row">
+
+
+        @for(int i=0; i < 3 && auctionIndex < Model.Count; i++, auctionIndex++)
+        {
+
+            Auction item = Model[auctionIndex];
+
+
+            <div class="col-md-4 text-center">
+
+
+            @*Html.DisplayNameFor(model => model.Status)*@
+                  
+                   
+            
+                @*<div class="card bg-secondary" style="width:400px">
+                <div class="card-body">*@
+
+            
+
+
+                <h3 class="card-text"> @Html.ActionLink(item.Name, "Details", new { id = item.GUID }) </h3>
+
+                <img class="card-img-top" src="~/ImageHandler.ashx?id=@item.GUID" alt="ImageNotAvailable" />
+
+                <p class="card-text" id="timer @item.GUID">
+                    @if (!item.IsOpened())
+                    {
+                        @item.StatusText
+                    }
+                </p>
+
+
+                <p class="card-text" id="price @item.GUID">Price: @item.CurrentPrice.TransformToCurrency() @WebApplication1.Settings.GlobalSettings.C</p>
+
+                @{
+                    var lastBidder = WebApplication1.Controllers.AuctionsController.GetLastBidder(item);
+                    if (lastBidder != null)
+                    {
+                        <p class="card-text" id="user @item.GUID">@(lastBidder.Name + " " + lastBidder.Surname)</p>
+                    }
+                }
+
+
+                @using (Html.BeginForm("Bid", "Auctions", FormMethod.Post, new { id = "form_" + item.GUID }))
+                {
+                    @Html.AntiForgeryToken()
+
+                    <input type="hidden" name="GUID" value="@item.GUID" />
+
+                    <div class="form-group">
+
+                        <div class="" align="center">
+
+                            <input type="number" name="tokensOffered" value="@((item.CurrentPrice + 1).TransformToCurrency())" min="@((item.CurrentPrice + 1).TransformToCurrency())" id="offerInput @item.GUID" class="form-control" step="@Utils.TokenValue"/>
+                            
+                        </div>
+                    </div>
+
+                    <div class="form-actions no-color">
+
+                        @if (item.StatusText == "OPENED" && Auth.Check())
+                        {
+                            <button class="btn btn-primary" type="submit" id="bidButton @item.GUID" onclick="">Bid Now</button>
+                        }
+                        else
+                        {
+                            <button class="btn btn-primary" type="submit" id="bidButton @item.GUID" disabled>Bid Now</button>
+                        }
+
+                    </div>
+                }
+
+                @if (item.StatusText == "READY" && Auth.Check() && Auth.User.IsAdmin())
+                {
+                    // add option to open ready auctions
+
+                    using (Html.BeginForm("Open", "Auctions", FormMethod.Post))
+                    {
+                        @Html.AntiForgeryToken()
+
+                        <input type="hidden" name="GUID" value="@item.GUID" />
+                        
+                        <div class="form-actions no-color">
+
+                            <br />
+                            <button class="btn btn-primary" type="submit" id="openButton @item.GUID" onclick="">Open</button>
+                            
+                        </div>
+                    }
+
+                }
+
+                    @*</div>
+                </div>*@
+
+                </div>
+
+            }
+
+            </div>
+
+
+        
+@*</div>*@
+
+
+    }
+}
+
+
+@section scripts {
+
+    <script src="~/Scripts/jquery.signalR-2.3.0.min.js"></script>
+    <script src='/signalr/js'></script>
+    <script src="~/Scripts/auction.js"></script>
+    
+    <script>
+        
+        @foreach (var item in Model)
+        {
+
+		    <text>
+
+                @if (!item.DateOpened.HasValue || !item.IsOpened())
+                {
+                    continue;
+                }
+        
+                var countDownDate = new Date( @item.DateOpened.Value.AddSeconds(item.Duration.Value).ToJsMilliseconds() );
+        
+                @*console.log("Original date: " + "@item.DateOpened");
+                console.log("Duration: " + "@item.Duration");
+                console.log("converted date" + String(countDownDate));
+                console.log("Now: " + String(new Date()));*@
+
+                setIntervalForAuction("@item.GUID", countDownDate);
+
+            </text>
+
+        }
+        
+    </script>
+
+}

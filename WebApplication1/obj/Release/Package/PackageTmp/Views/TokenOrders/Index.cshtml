@@ -1,0 +1,74 @@
+﻿@model IEnumerable<WebApplication1.TokenOrder>
+
+@{
+    ViewBag.Title = "Index";
+}
+
+<h2>Token orders</h2>
+
+<p>
+    @Html.ActionLink("Buy", "Create")
+</p>
+<table class="table">
+    <tr>
+        <th>
+            @Html.DisplayNameFor(model => model.GUID)
+        </th>
+        <th>
+            @Html.DisplayNameFor(model => model.NumTokens)
+        </th>
+        <th>
+            @Html.DisplayNameFor(model => model.PackagePrice)
+        </th>
+        <th>
+            @Html.DisplayNameFor(model => model.Status)
+        </th>
+        <th>
+            @Html.DisplayNameFor(model => model.DateSubmitted)
+        </th>
+        <th></th>
+    </tr>
+
+@foreach (var item in Model) {
+    <tr>
+        <td>
+            @Html.DisplayFor(modelItem => item.GUID)
+        </td>
+        <td>
+            @Html.DisplayFor(modelItem => item.NumTokens)
+        </td>
+        <td>
+            @Html.DisplayFor(modelItem => item.PackagePrice)
+        </td>
+        <td>
+            @Html.DisplayFor(modelItem => item.Status)
+        </td>
+        <td>
+            @Html.DisplayFor(modelItem => item.DateSubmitted)
+        </td>
+        <td>
+            
+        </td>
+    </tr>
+}
+
+</table>
+
+<p></p>
+
+<p>
+@for (int i=0; i < ViewBag.numPages; i++)
+{
+    if (ViewBag.pageNumber == i)
+    {
+        <b>
+            @Html.ActionLink((i + 1).ToString(), "Index", new { pageNumber = i })
+        </b>
+    }
+    else
+    {
+        @Html.ActionLink((i + 1).ToString(), "Index", new { pageNumber = i })
+    }
+    
+}
+</p>

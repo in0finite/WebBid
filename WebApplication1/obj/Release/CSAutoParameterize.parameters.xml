@@ -1,0 +1,9 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<parameters>
+  <parameter name="Model1-Web.config Connection String" description="Model1 Connection String used in web.config by the application to access the database." defaultValue="Server=tcp:auctions3823.database.windows.net,1433;Initial Catalog=iep;Persist Security Info=False;User ID=la150391d;Password=rng9843t&amp;%hf842;MultipleActiveResultSets=False;Encrypt=True;TrustServerCertificate=False;Connection Timeout=30;" tags="SqlConnectionString">
+    <parameterEntry kind="XmlFile" scope="C:\\Users\\TEMP\\Documents\\Visual\ Studio\ 2017\\Projects\\WebApplication1\\WebApplication1\\obj\\Release\\Package\\PackageTmp\\Web\.config$" match="/configuration/connectionStrings/add[@name='Model1']/@connectionString" />
+  </parameter>
+  <parameter name="Model2-Web.config Connection String" description="Model2 Connection String used in web.config by the application to access the database." defaultValue="Server=tcp:auctions3823.database.windows.net,1433;Initial Catalog=iep;Persist Security Info=False;User ID=la150391d;Password=rng9843t&amp;%hf842;MultipleActiveResultSets=False;Encrypt=True;TrustServerCertificate=False;Connection Timeout=30;" tags="SqlConnectionString">
+    <parameterEntry kind="XmlFile" scope="C:\\Users\\TEMP\\Documents\\Visual\ Studio\ 2017\\Projects\\WebApplication1\\WebApplication1\\obj\\Release\\Package\\PackageTmp\\Web\.config$" match="/configuration/connectionStrings/add[@name='Model2']/@connectionString" />
+  </parameter>
+</parameters>
